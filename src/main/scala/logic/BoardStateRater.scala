@@ -1,4 +1,4 @@
-package Logic
+package logic
 
 import model.{Board, Marker, Player}
 
@@ -36,7 +36,7 @@ object LongestStreakRater extends BoardStateRater {
     val leftDiagonals = lowerRightBorder.map{ case (x, y) =>
       (for{
         i <- x - 4 to x
-        j = i + (y - x)
+        j = i - (y - x)
       } yield if(i < 7 && j < 6 && i >= 0 && j >= 0) {
         Some(i -> j)
       } else {

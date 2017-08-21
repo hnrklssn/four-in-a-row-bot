@@ -1,4 +1,4 @@
-package Logic
+package logic
 
 import model.{Board, EmptyBoard, Player, State}
 import scala.annotation.tailrec

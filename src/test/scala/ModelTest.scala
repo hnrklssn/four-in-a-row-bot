@@ -1,4 +1,4 @@
-import Logic.BoardStateRater
+import logic.BoardStateRater
 import model._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -75,6 +75,77 @@ class ModelTest extends FlatSpec with Matchers {
     val board = Board(inputString)
     val column = board.col(5)
     column should contain theSameElementsAs List(Player1Marker, Player1Marker)
+  }
+
+  it should "identify a column of four as victory" in {
+    val inputString =
+      """.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,0,0,0,0,
+        |.,.,.,.,.,.""".stripMargin.replaceAll("\\s", "")
+    val board = Board(inputString)
+    assert(board.ended() && board.isVictorious(Player1Marker) && !board.isVictorious(Player2Marker))
+    val inputArray2 = Array(Nil, Nil, List(Player1Marker, Player2Marker, Player1Marker, Player1Marker, Player1Marker, Player1Marker), Nil, Nil, Nil, Nil)
+    val board2 = new BoardImpl(inputArray2)
+    assert(board2.ended() && board2.isVictorious(Player1Marker) && !board2.isVictorious(Player2Marker))
+  }
+
+  it should "identify a row of four as victory" in {
+    val inputString =
+      """.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,.,0,1,1,
+        |.,.,.,0,1,0,
+        |.,.,1,0,1,1,
+        |.,.,0,0,0,1,
+        |.,.,.,.,.,.""".stripMargin.replaceAll("\\s", "")
+    val board = Board(inputString)
+    assert(board.ended() && board.isVictorious(Player1Marker) && !board.isVictorious(Player2Marker))
+  }
+
+  "temp" should "identify a right diagonal of four as victory" in {
+    val inputString =
+      """.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,0,1,1,1,
+        |.,.,0,1,0,1,
+        |.,1,1,0,1,0,
+        |.,1,0,0,1,0,
+        |.,.,.,.,.,.""".stripMargin.replaceAll("\\s", "")
+    val board = Board(inputString)
+    assert(board.ended() && board.isVictorious(Player2Marker) && !board.isVictorious(Player1Marker))
+    val inputString2 =
+      """.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,0,1,1,1,0,
+        |.,0,1,0,1,1,
+        |1,1,0,1,0,0,
+        |1,0,0,1,0,1,
+        |.,.,.,.,.,.""".stripMargin.replaceAll("\\s", "")
+    val board2 = Board(inputString2)
+    assert(board2.ended() && board2.isVictorious(Player2Marker) && !board2.isVictorious(Player1Marker))
+  }
+
+  "temp2" should "identify a left diagonal of four as victory" in {
+    val inputString =
+      """.,.,.,.,.,.,
+        |.,.,.,.,.,.,
+        |.,.,1,1,0,1,
+        |.,.,0,1,0,1,
+        |.,1,1,0,1,0,
+        |.,0,0,0,1,1,
+        |.,.,.,.,.,.""".stripMargin.replaceAll("\\s", "")
+    val board = Board(inputString)
+    println("||||||||||||||||||||||||||||")
+    println()
+    (0 to 6).foreach{ x => println(board.col(x))}
+    println(board)
+    println(inputString)
+    assert(inputString == board.toString)
+    assert(board.ended() && board.isVictorious(Player2Marker) && !board.isVictorious(Player1Marker))
   }
 
   "EmptyBoard" should "store an empty board" in {
