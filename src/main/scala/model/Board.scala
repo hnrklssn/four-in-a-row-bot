@@ -20,8 +20,8 @@ trait Board {
   }
 
   private def recurseBestMove(boardStateRater: BoardStateRater, player: Player, level: Int): (Int, Double) = {
-    System.err.println(s"recursing - level: $level")
-    ((0 -> -1.0) +: (0 to 6).map(x => x -> col(x))
+    //System.err.println(s"recursing - level: $level")
+    ((0 -> -1.0) +: (0 to 6).map(x => x -> col(x)).par
       .filter(_._2.size < 6)
       .map { t =>
         val x = t._1

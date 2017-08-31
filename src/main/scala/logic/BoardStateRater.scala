@@ -9,6 +9,8 @@ import scala.util.Random
   */
 trait BoardStateRater {
   def rate(board: Board, player: Player): Option[Double]
+  def id: Int
+  def version: Int
 }
 
 object LongestStreakRater extends BoardStateRater {
@@ -57,6 +59,10 @@ object LongestStreakRater extends BoardStateRater {
       }
       (Math.max(max, next), next)
     }._1
+
+  override def id: Int = -1
+
+  override def version: Int = 0
 }
 
 object RandomRater extends BoardStateRater {
@@ -69,6 +75,10 @@ object RandomRater extends BoardStateRater {
     System.err.println("None")
     None
   }
+
+  override def id: Int = -2
+
+  override def version: Int = 0
 }
 
 object BoardStateRater {

@@ -175,6 +175,10 @@ class ModelTest extends FlatSpec with Matchers {
     val board =  EmptyBoard
     val middleRater = new BoardStateRater {
       override def rate(board: Board, player: Player): Option[Double] = Some(board.col(3).count(_ == player))
+
+      override def id: Int = -3
+
+      override def version: Int = 0
     }
     val move = board.bestMove(middleRater, Player1Marker)
     assert(move == 3)
