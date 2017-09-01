@@ -1,6 +1,6 @@
 package learning
 
-import logic.BoardStateRater
+import logic.{BoardStateRater, PlayMaker}
 import model.{Board, Player, Player1Marker, Player2Marker}
 
 /**
@@ -9,7 +9,7 @@ import model.{Board, Player, Player1Marker, Player2Marker}
 trait Persistence {
   def recordBoardStateResult(nextBoard: Board, result: Option[Player]): Unit
 
-  def recordMatchResult(bot1: BoardStateRater, bot2: BoardStateRater, victor: Option[(BoardStateRater, Boolean)]): Unit
+  def recordMatchResult(bot1: PlayMaker, bot2: PlayMaker, victor: Option[(PlayMaker, Boolean)]): Unit
 
   def recordWeights(bot: NeuralBoardRater): Unit
 
@@ -52,15 +52,15 @@ class H2Persistence(iteration: Int) extends Persistence {
           WHERE board = ${board.toString()} AND iteration = $iteration""".update
   }
 
-  override def recordMatchResult(bot1: BoardStateRater, bot2: BoardStateRater, victor: Option[(BoardStateRater, Boolean)]): Unit = insertMatchRecord(bot1, bot2, victor)
+  override def recordMatchResult(bot1: PlayMaker, bot2: PlayMaker, victor: Option[(PlayMaker, Boolean)]): Unit = insertMatchRecord(bot1, bot2, victor)
     .run
     .transact(xa)
     .unsafePerformIO
 
-  def insertMatchRecord(bot1: BoardStateRater, bot2: BoardStateRater, victorOpt: Option[(BoardStateRater, Boolean)]): Update0 = {
-    val (victor, starterWinBool) = victorOpt.map{case (v, bool) => s"${v.id}-${v.version}" -> bool}.getOrElse("-" -> false)
-    val identifier1 = s"${bot1.id}-${bot1.version}"
-    val identifier2 = s"${bot2.id}-${bot2.version}"
+  def insertMatchRecord(bot1: PlayMaker, bot2: PlayMaker, victorOpt: Option[(PlayMaker, Boolean)]): Update0 = {
+    val (victor, starterWinBool) = victorOpt.map{case (v, bool) => v.toString -> bool}.getOrElse("-" -> false)
+    val identifier1 = bot1.toString
+    val identifier2 = bot2.toString
     sql"""INSERT INTO games (bot1, bot2, victor, starterWin, iteration)
           VALUES ($identifier1, $identifier2, $victor, $starterWinBool, $iteration)""".update
   }
@@ -76,8 +76,7 @@ class H2Persistence(iteration: Int) extends Persistence {
   }
 
   override def matchStats(bot: NeuralBoardRater): (Int, Int, Int) = {
-    val identifier = s"${bot.id}-${bot.version}"
-    getMatchResults(identifier)
+    getMatchResults(bot.toString)
       .unique
       .transact(xa)
       .unsafePerformIO
@@ -163,4 +162,16 @@ object H2Persistence {
 
     (dropBoards.run *> createBoardTable.run *> dropGames.run *> createGameTable.run *> dropNets.run *> createNetTable.run).transact(xa).unsafePerformIO
   }
+}
+
+object MockPersistence extends Persistence {
+  override def recordBoardStateResult(nextBoard: Board, result: Option[Player]): Unit = ()
+
+  override def recordMatchResult(bot1: PlayMaker, bot2: PlayMaker, victor: Option[(PlayMaker, Boolean)]): Unit = ()
+
+  override def recordWeights(bot: NeuralBoardRater): Unit = ()
+
+  override def matchStats(bot: NeuralBoardRater): (Int, Int, Int) = ???
+
+  override def getBoards(): Seq[(String, Double)] = ???
 }

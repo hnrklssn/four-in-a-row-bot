@@ -9,6 +9,9 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.global
 import akka.actor.Actor.Receive
 import akka.event.Logging
+import logic.HumanPlayer
+import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import scala.concurrent.duration.Duration
 
@@ -58,11 +61,17 @@ class Learn(path: String) extends Actor {
 
 object Learn extends App {
   val startTime = System.currentTimeMillis()
+  println("Enter directory path to load nets from, or leave blank to randomize new weights")
+  val input = scala.io.StdIn.readLine()
 
-  val initialNets: Seq[NeuralBoardRater] = (0 to 5).map(n => NeuralBoardRater(n))
+  val initialNets: Seq[NeuralBoardRater] = if(input.trim == "") {
+    (0 to 5).map(n => NeuralBoardRater(n))
+  } else {
+    loadNets(input)
+  }
 
   H2Persistence.initialize()
-  val path = System.getProperty("user.home") + File.separator + "bots"
+  val path = System.getProperty("user.home") + File.separator + "bots" + File.separator + ISODateTimeFormat.dateHourMinute.print(DateTime.now())
   val customDir = new File(path)
   if (customDir.exists() || customDir.mkdirs()) {
     implicit val system: ActorSystem = ActorSystem("system")
@@ -77,6 +86,15 @@ object Learn extends App {
   }
   val endTime = System.currentTimeMillis()
   println(s"Done! - time passed: ${(endTime - startTime)/1000/60} minutes")
+
+  def loadNets(path: String): Seq[NeuralBoardRater] = {
+    val d = new File(path)
+    d.listFiles
+      .filter(_.isFile)
+      .toList
+      .map(_.getAbsolutePath)
+      .map(NeuralBoardRater.fromFile)
+  }
 }
 
 case class Iterate(i: Int, bots: Seq[NeuralBoardRater])

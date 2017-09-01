@@ -1,6 +1,6 @@
 package model
 
-import logic.BoardStateRater
+import logic.{BoardStateRater, HumanPlayer, PlayMaker}
 import logic.BoardStateRater._
 
 /**
@@ -15,8 +15,11 @@ trait Board {
   def isVictorious(player: Player): Boolean
   def isDraw(): Boolean
   def ended(): Boolean
-  def bestMove(boardStateRater: BoardStateRater, player: Player): Int = {
-    recurseBestMove(boardStateRater, player, 0)._1
+  def bestMove(playMaker: PlayMaker, player: Player): Int = {
+    playMaker match {
+      case h: HumanPlayer => h.pickMove(this)
+      case b: BoardStateRater => recurseBestMove(b, player, 0)._1
+    }
   }
 
   private def recurseBestMove(boardStateRater: BoardStateRater, player: Player, level: Int): (Int, Double) = {
@@ -28,7 +31,7 @@ trait Board {
         val nextBoard = placeMarker(x, player)
         val ratingOption = boardStateRater.rate(nextBoard, player)
         val rating = ratingOption match {
-          case Some(r) => if(level < 3) {
+          case Some(r) => if(level < 3 && !nextBoard.ended()) {
             val (worstCaseMove, worstCaseRating) = nextBoard.recurseBestMove(boardStateRater, player.otherPlayer, level + 1)
             r + 0.15 * flipRating(worstCaseRating)
           } else {
@@ -149,6 +152,14 @@ object Board {
     }
     (Math.max(max, next), next)
   }._1
+
+  def prettyPrint(board: Board): String = {
+    "0|1|2|3|4|5|6\n" +
+    (0 to 5).reverse.map{ y =>
+      (0 to 6).map{ x => board(x)(y) }
+        .mkString("|")
+    }.mkString("\n")
+  }
 }
 
 object EmptyBoard extends Board {

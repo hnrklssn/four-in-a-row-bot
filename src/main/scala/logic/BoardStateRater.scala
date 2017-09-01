@@ -4,10 +4,12 @@ import model.{Board, Marker, Player}
 
 import scala.util.Random
 
+sealed trait PlayMaker
+
 /**
   * Created by henrik on 2017-08-16.
   */
-trait BoardStateRater {
+trait BoardStateRater extends PlayMaker {
   def rate(board: Board, player: Player): Option[Double]
   def id: Int
   def version: Int
@@ -83,4 +85,22 @@ object RandomRater extends BoardStateRater {
 
 object BoardStateRater {
   def flipRating(r: Double): Double = 1 - r
+}
+
+class HumanPlayer(name: String) extends PlayMaker {
+  def pickMove(board: Board): Int = {
+    println(s"$name's turn")
+    println(Board.prettyPrint(board))
+    println("Make a move (0-6)")
+    val choice = scala.io.StdIn.readInt()
+    if(board.col(choice).size == 6) {
+      println("Column full, try again")
+      pickMove(board)
+    } else if(choice < 0 || choice > 6) {
+      println(s"Your pick - $choice - is not in the interval 0-6, try again")
+      pickMove(board)
+    } else {
+      choice
+    }
+  }
 }

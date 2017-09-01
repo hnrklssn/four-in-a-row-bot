@@ -39,7 +39,17 @@ class NeuralBoardRater(private val net: FeedForwardNetwork with SupervisedTraini
     ~> (new PrintWriter(new File(file))) io (_.write(stringRep)) io (_.close)
   }
 
-  override def rate(board: Board, player: Player): Option[Double] = net.evaluate(boardToVector(board, player)).headOption
+  override def rate(board: Board, player: Player): Option[Double] = if(board.ended()){
+    Some(if(board.isVictorious(player)) {
+      1.0
+    } else if(board.isVictorious(player.otherPlayer)) {
+      0.0
+    } else {
+      0.5
+    })
+  } else {
+    net.evaluate(boardToVector(board, player)).headOption
+  }
 
   private def boardToVector(board: Board, player: Player): Vector[Double] = {
     val boardString = player match {
@@ -64,6 +74,8 @@ class NeuralBoardRater(private val net: FeedForwardNetwork with SupervisedTraini
     case n: NeuralBoardRater => n.net.weights.deep == net.weights.deep
     case _ => false
   }
+
+  override def toString: String = s"bot$id-$version"
 }
 
 object NeuralBoardRater {
