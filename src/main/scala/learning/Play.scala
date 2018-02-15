@@ -13,7 +13,7 @@ object Play extends App {
   val player = new HumanPlayer(name)
   println("Enter file path to load net from")
   val input = readLine()
-  val ai = NeuralBoardRater.fromFile(input)
+  val ai = NeuralBoardRater.fromFile(input, explore = false)
   val tournament = new Tournament(MockPersistence, player, ai)
   tournament.run()
 }

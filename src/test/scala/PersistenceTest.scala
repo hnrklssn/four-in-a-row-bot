@@ -23,7 +23,7 @@ class PersistenceTest extends FlatSpec with Matchers {
     val path = java.io.File.createTempFile(fileName, null).getAbsolutePath
     val bot = NeuralBoardRater(0)
     bot.writeToFile(path)
-    val same = NeuralBoardRater.fromFile(path)
+    val same = NeuralBoardRater.fromFile(path, explore = true)
     assert(bot.id == same.id)
     assert(bot.version == same.version)
     assert(bot == same)
@@ -33,7 +33,7 @@ class PersistenceTest extends FlatSpec with Matchers {
     val path = "test.weights"
     val bot = NeuralBoardRater(0)
     bot.writeToFile(path)
-    val same = NeuralBoardRater.fromFile(path)
+    val same = NeuralBoardRater.fromFile(path, explore = true)
     assert(bot.id == same.id)
     assert(bot.version == same.version)
     assert(bot == same)

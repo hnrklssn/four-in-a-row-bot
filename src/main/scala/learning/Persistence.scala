@@ -15,7 +15,7 @@ trait Persistence {
 
   def matchStats(bot: NeuralBoardRater): (Int, Int, Int)
 
-  def getBoards(): Seq[(String, Double)]
+  def getBoards(window: Int): Seq[(String, Double)]
 }
 
 class H2Persistence(iteration: Int) extends Persistence {
@@ -90,8 +90,8 @@ class H2Persistence(iteration: Int) extends Persistence {
                                                                          AND iteration = $iteration"""
     .query[(Int,Int,Int)]
 
-  override def getBoards(): Seq[(String, Double)] = {
-    boards(5).vector
+  override def getBoards(window: Int): Seq[(String, Double)] = {
+    boards(window).vector
       .transact(xa)
       .unsafePerformIO
   }
@@ -173,5 +173,5 @@ object MockPersistence extends Persistence {
 
   override def matchStats(bot: NeuralBoardRater): (Int, Int, Int) = ???
 
-  override def getBoards(): Seq[(String, Double)] = ???
+  override def getBoards(window: Int): Seq[(String, Double)] = ???
 }

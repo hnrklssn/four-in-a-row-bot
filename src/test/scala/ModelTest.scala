@@ -179,6 +179,8 @@ class ModelTest extends FlatSpec with Matchers {
       override def id: Int = -3
 
       override def version: Int = 0
+
+      override val random: Boolean = false
     }
     val move = board.bestMove(middleRater, Player1Marker)
     assert(move == 3)

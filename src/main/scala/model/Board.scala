@@ -2,6 +2,8 @@ package model
 
 import logic.{BoardStateRater, HumanPlayer, PlayMaker}
 import logic.BoardStateRater._
+import util.Math.weightedRandomPick
+import scala.collection.parallel.immutable.ParSeq
 
 /**
   * Created by henrik on 2017-08-15.
@@ -24,7 +26,7 @@ trait Board {
 
   private def recurseBestMove(boardStateRater: BoardStateRater, player: Player, level: Int): (Int, Double) = {
     //System.err.println(s"recursing - level: $level")
-    ((0 -> -1.0) +: (0 to 6).map(x => x -> col(x)).par
+    val ratings = (0 -> 0.0) +: (0 to 6).map(x => x -> col(x)).par
       .filter(_._2.size < 6)
       .map { t =>
         val x = t._1
@@ -33,7 +35,10 @@ trait Board {
         val rating = ratingOption match {
           case Some(r) => if(level < 3 && !nextBoard.ended()) {
             val (worstCaseMove, worstCaseRating) = nextBoard.recurseBestMove(boardStateRater, player.otherPlayer, level + 1)
-            r + 0.15 * flipRating(worstCaseRating)
+            if(worstCaseRating < 0 || r < 0) {
+              throw new IllegalArgumentException
+            }
+            0.85 * r + 0.15 * flipRating(worstCaseRating)
           } else {
             r
           }
@@ -42,8 +47,12 @@ trait Board {
             flipRating(worstCaseRating)
         }
         x -> rating
-      })
-      .maxBy(_._2)
+      }
+    if(boardStateRater.random) {
+      weightedRandomPick(ratings.seq)
+    } else {
+      ratings.maxBy(_._2)
+    }
   }
 
   override def toString: String = {

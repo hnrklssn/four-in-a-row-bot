@@ -1,15 +1,25 @@
 package logic
 
+import learning.NeuralBoardRater
 import model.{Board, EmptyBoard, Player, State}
+import util.WeightsConfigContainer
+
 import scala.annotation.tailrec
 import scala.io.Source
+import scala.util.Random
 
 /**
   * Created by henrik on 2017-08-15.
   */
 class Controller {
 
-  private val boardStateRater: BoardStateRater = LongestStreakRater//(board: Board, player: Player) => Some(board.col(3).count(_ == player))
+  private lazy val weightString: String = {
+    val size = WeightsConfigContainer.weights.length
+    val index = Random.nextInt(size)
+    WeightsConfigContainer.weights(index)
+  }
+
+  private val boardStateRater: BoardStateRater = NeuralBoardRater.fromString(weightString, explore = false)
 
   @tailrec
   final def run(state: State, inputStream: Stream[String]): Unit = {

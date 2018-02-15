@@ -5,29 +5,32 @@ import java.io.{File, PrintWriter}
 import neuroflow.application.plugin.IO
 import neuroflow.core.Activator._
 import neuroflow.core._
-import neuroflow.nets.DefaultNetwork._
+import neuroflow.nets.DenseNetwork._
 import neuroflow.common.{Logs, ~>}
 import shapeless._
 import logic.BoardStateRater
 import model.{Board, Player, Player1Marker, Player2Marker}
-
+import breeze.linalg.{DenseMatrix, DenseVector}
+import scala.collection.parallel.ParSeq
 import scala.io.{BufferedSource, Source}
 
 /**
   * Created by henrik on 2017-08-21.
   */
-class NeuralBoardRater(private val net: FeedForwardNetwork with SupervisedTraining, val id: Int, val version: Int) extends BoardStateRater {
+class NeuralBoardRater(private val net: FeedForwardNetwork, val id: Int, val version: Int,
+                       explore: Boolean, learningRateFuncGen: Option[Int => PartialFunction[(Int, Double), Double]] = None) extends BoardStateRater {
 
   def train(trainingData: Seq[(String, Double)]): NeuralBoardRater = {
     val (preXs, preYs) = trainingData.unzip
     val xs = preXs.map{b => boardStringToVector(b)}
-    val ys = preYs.map(Vector(_))
+    val ys = preYs.map(DenseVector(_))
     implicit val weightProvider: WeightProvider = new WeightProvider {
       override def apply(v1: Seq[Layer]): _root_.neuroflow.core.Network.Weights = net.weights
     }
-    val newNet = Network(NeuralBoardRater.layers, net.settings.copy(iterations = 200))
+    val learningRateFunc = learningRateFuncGen.map(_(version + 1)).getOrElse(net.settings.learningRate)
+    val newNet = Network(NeuralBoardRater.layers, net.settings.copy(iterations = 200, learningRate = learningRateFunc))
     newNet.train(xs, ys)
-    new NeuralBoardRater(newNet, id, version + 1)
+    new NeuralBoardRater(newNet, id, version + 1, explore, learningRateFuncGen)
   }
 
   lazy val json: String = IO.Json.write(net)
@@ -48,10 +51,10 @@ class NeuralBoardRater(private val net: FeedForwardNetwork with SupervisedTraini
       0.5
     })
   } else {
-    net.evaluate(boardToVector(board, player)).headOption
+    Option(net.evaluate(boardToVector(board, player))(0))
   }
 
-  private def boardToVector(board: Board, player: Player): Vector[Double] = {
+  private def boardToVector(board: Board, player: Player): DenseVector[Double] = {
     val boardString = player match {
       case Player1Marker => board.toString
       case Player2Marker => board.toString.map{
@@ -62,43 +65,68 @@ class NeuralBoardRater(private val net: FeedForwardNetwork with SupervisedTraini
     }
     boardStringToVector(boardString)
   }
-  private def boardStringToVector(board: String): Vector[Double] = {
-    board.split(',').map{
+  private def boardStringToVector(board: String): DenseVector[Double] = {
+    DenseVector(board.split(',').map{
       case "0" => 1.0
       case "1" => -1.0
       case "." => 0.0
-    }.toVector
+    })
+  }
+
+  def errorFunc(xsys: ParSeq[(String, Double)]): Double = {
+    xsys.map { xy => 0.5 * math.pow(xy._2 - net.evaluate(boardStringToVector(xy._1))(0), 2) }.sum
   }
 
   override def equals(o: scala.Any): Boolean = o match {
-    case n: NeuralBoardRater => n.net.weights.deep == net.weights.deep
+    case n: NeuralBoardRater => n.net.weights.zip(net.weights)
+      .forall(t =>
+        (t._1 :== t._2)
+          .forall(b => b)
+      )
     case _ => false
   }
 
   override def toString: String = s"bot$id-$version"
+
+  override val random: Boolean = explore
 }
 
 object NeuralBoardRater {
   val f = Sigmoid
-  val layers = Input(42) :: Hidden(25, f) :: Output(1, f) :: HNil
-
-  def fromJson(json: String, id: Int, version: Int): NeuralBoardRater = {
-    implicit val weights  = IO.Json.read(json)
-    val net = Network(layers)
-    new NeuralBoardRater(net, id, version)
+  val layers = Input(42) :: Dense(25, f) :: Output(1, f) :: HNil
+  val defaultLearningRateGen: Int => PartialFunction[(Int, Double), Double] = (version: Int) => { case (i: Int, d: Double) =>
+    val asymptote = if(version < 10) 1E-4 else 1E-6
+    val maxFactor = 1E-3 //starting at too high of a learning rate tends to make a big leap to a plateau, making it hard to escape due to lack of gradient
+    val lr = util.Math.dampenedSinusoidal(decay = 0.02, period = 2.0)(version) * //0.02 decay constant gives values > 1E-3 when version < 135
+             util.Math.dampenedSinusoidal(decay = 0.01, period = 2.0)(i) * //0.01 decay constant gives values > 0.1 when i < 200
+             maxFactor +
+             asymptote
+    println(s"learning rate: $lr version: $version iteration: $i")
+    lr
   }
 
-  def fromFile(file: String): NeuralBoardRater = {
-    val lines = Source.fromFile(file).getLines().toStream
+  def fromJson(json: String, id: Int, version: Int, explore: Boolean): NeuralBoardRater = {
+    implicit val weights  = IO.Json.read(json)
+    val net = Network(layers)
+    new NeuralBoardRater(net, id, version, explore)
+  }
+
+  def fromFile(file: String, explore: Boolean): NeuralBoardRater = {
+    val content = Source.fromFile(file).mkString
+    fromString(content, explore)
+  }
+
+  def fromString(content: String, explore: Boolean): NeuralBoardRater = {
+    val lines = content.split('\n')
     val split = lines.head.split('-')
     val (id, version) = (split(0).toInt, split(1).toInt)
 
-    ~>(lines.tail.mkString("\n")).map(fromJson(_, id, version))
+    ~>(lines.tail.mkString("\n")).map(fromJson(_, id, version, explore))
   }
 
-  def apply(id: Int): NeuralBoardRater = {
+  def apply(id: Int, learningRateGen: Int => PartialFunction[(Int, Double), Double] = defaultLearningRateGen): NeuralBoardRater = {
     import neuroflow.core.FFN.WeightProvider._
-    val net = Network(layers)
-    new NeuralBoardRater(net, id, 0)
+    val net = Network(layers, Settings(learningRate = learningRateGen(1)))
+    new NeuralBoardRater(net, id, 0, true, Some(learningRateGen)) //new board should explore during training
   }
 }
