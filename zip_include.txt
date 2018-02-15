@@ -1,0 +1,6 @@
+learning/NeuralBoardRater.scala
+learning/Tournament.scala
+logic/BoardStateRater.scala
+logic/Controller.scala
+model/Board.scala
+model/State.scala
