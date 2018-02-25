@@ -1,6 +1,4 @@
-package logic
-
-import model.{Board, Marker, Player}
+package com.hnrklssn.fourinarow.core.model
 
 import scala.util.Random
 

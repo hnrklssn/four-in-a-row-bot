@@ -1,9 +1,6 @@
-package learning
+package com.hnrklssn.fourinarow.learning
 
-import logic.{BoardStateRater, PlayMaker}
-import model._
-
-import scala.annotation.tailrec
+import com.hnrklssn.fourinarow.core.model._
 
 /**
   * Created by henrik on 2017-08-18.

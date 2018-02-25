@@ -1,4 +1,4 @@
-package learning
+package com.hnrklssn.fourinarow.learning
 
 import java.io.{File, PrintWriter}
 
@@ -8,8 +8,7 @@ import neuroflow.core._
 import neuroflow.nets.DenseNetwork._
 import neuroflow.common.{Logs, ~>}
 import shapeless._
-import logic.BoardStateRater
-import model.{Board, Player, Player1Marker, Player2Marker}
+import com.hnrklssn.fourinarow.core.model.{Board, Player, Player1Marker, Player2Marker, BoardStateRater}
 import breeze.linalg.{DenseMatrix, DenseVector}
 import scala.collection.parallel.ParSeq
 import scala.io.{BufferedSource, Source}
@@ -97,10 +96,10 @@ object NeuralBoardRater {
   val defaultLearningRateGen: Int => PartialFunction[(Int, Double), Double] = (version: Int) => { case (i: Int, d: Double) =>
     val asymptote = if(version < 10) 1E-4 else 1E-6
     val maxFactor = 1E-3 //starting at too high of a learning rate tends to make a big leap to a plateau, making it hard to escape due to lack of gradient
-    val lr = util.Math.dampenedSinusoidal(decay = 0.02, period = 2.0)(version) * //0.02 decay constant gives values > 1E-3 when version < 135
-             util.Math.dampenedSinusoidal(decay = 0.01, period = 2.0)(i) * //0.01 decay constant gives values > 0.1 when i < 200
-             maxFactor +
-             asymptote
+  val lr = util.Math.dampenedSinusoidal(decay = 0.02, period = 2.0)(version) * //0.02 decay constant gives values > 1E-3 when version < 135
+    util.Math.dampenedSinusoidal(decay = 0.01, period = 2.0)(i) * //0.01 decay constant gives values > 0.1 when i < 200
+    maxFactor +
+    asymptote
     println(s"learning rate: $lr version: $version iteration: $i")
     lr
   }

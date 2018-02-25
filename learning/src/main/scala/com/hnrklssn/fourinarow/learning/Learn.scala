@@ -1,4 +1,4 @@
-package learning
+package com.hnrklssn.fourinarow.learning
 
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -9,8 +9,7 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.global
 import akka.actor.Actor.Receive
 import akka.event.Logging
-import logic.HumanPlayer
-import model.Player1Marker
+import com.hnrklssn.fourinarow.core.model.{HumanPlayer, Player1Marker}
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 

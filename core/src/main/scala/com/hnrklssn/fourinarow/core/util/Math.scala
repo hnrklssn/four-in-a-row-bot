@@ -1,4 +1,4 @@
-package util
+package com.hnrklssn.fourinarow.core.util
 
 object Math {
   private val rand = scala.util.Random

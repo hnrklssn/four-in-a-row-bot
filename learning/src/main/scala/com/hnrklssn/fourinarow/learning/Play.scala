@@ -1,6 +1,6 @@
-package learning
+package com.hnrklssn.fourinarow.learning
 
-import logic.HumanPlayer
+import com.hnrklssn.fourinarow.core.model.HumanPlayer
 
 import scala.io.StdIn.readLine
 

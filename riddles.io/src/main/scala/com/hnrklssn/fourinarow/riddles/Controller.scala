@@ -1,9 +1,6 @@
-package logic
+package com.hnrklssn.fourinarow.riddles
 
-import learning.NeuralBoardRater
-import model.{Board, EmptyBoard, Player, State}
-import util.WeightsConfigContainer
-
+import com.hnrklssn.fourinarow.core.model.{Board, BoardStateRater, Player, State}
 import scala.annotation.tailrec
 import scala.io.Source
 import scala.util.Random
@@ -19,7 +16,7 @@ class Controller {
     WeightsConfigContainer.weights(index)
   }
 
-  private val boardStateRater: BoardStateRater = NeuralBoardRater.fromString(weightString, explore = false)
+  private val boardStateRater: BoardStateRater = ??? //NeuralBoardRater.fromString(weightString, explore = false)
 
   @tailrec
   final def run(state: State, inputStream: Stream[String]): Unit = {
@@ -75,4 +72,5 @@ object Controller {
     (new Controller).run(settings, inputStream.dropWhile(_.startsWith("setting")))
   }
 }
+
 

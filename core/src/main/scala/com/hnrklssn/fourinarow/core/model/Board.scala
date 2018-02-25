@@ -1,9 +1,7 @@
-package model
+package com.hnrklssn.fourinarow.core.model
 
-import logic.{BoardStateRater, HumanPlayer, PlayMaker}
-import logic.BoardStateRater._
-import util.Math.weightedRandomPick
-import scala.collection.parallel.immutable.ParSeq
+import BoardStateRater._
+import com.hnrklssn.fourinarow.core.util.Math
 
 /**
   * Created by henrik on 2017-08-15.
@@ -49,7 +47,7 @@ trait Board {
         x -> rating
       }
     if(boardStateRater.random) {
-      weightedRandomPick(ratings.seq)
+      Math.weightedRandomPick(ratings.seq)
     } else {
       ratings.maxBy(_._2)
     }
@@ -159,7 +157,7 @@ object Board {
     } else {
       0
     }
-    (Math.max(max, next), next)
+    (java.lang.Math.max(max, next), next)
   }._1
 
   def prettyPrint(board: Board): String = {

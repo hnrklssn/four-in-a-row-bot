@@ -1,4 +1,4 @@
-package model
+package com.hnrklssn.fourinarow.core.model
 
 /**
   * Created by henrik on 2017-08-15.
