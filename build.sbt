@@ -39,7 +39,12 @@ lazy val learning = (project in file("learning"))
       "com.typesafe.akka" %% "akka-actor" % "2.5.4")
   ).dependsOn(core)
 lazy val riddles = (project in file("riddles.io"))
-  .settings(commonSettings)
+  .settings(commonSettings,
+    libraryDependencies ++= Seq(
+      "com.zenecture" %% "neuroflow-core" % "1.1.3" % "test",
+      "com.zenecture" %% "neuroflow-application" % "1.1.3" % "test"
+    )
+  )
   .dependsOn(core)
 
-lazy val commonSettings = Seq(version := "0.1", scalaVersion := "2.12.3")
+lazy val commonSettings = Seq(version := "0.1", scalaVersion := "2.12.3", libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test")

@@ -1,4 +1,4 @@
-import learning.{H2Persistence, NeuralBoardRater, Persistence}
+import com.hnrklssn.fourinarow.learning.{H2Persistence, NeuralBoardRater, Persistence}
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

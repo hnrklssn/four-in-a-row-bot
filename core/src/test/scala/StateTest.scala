@@ -1,5 +1,5 @@
+import com.hnrklssn.fourinarow.core.model.State
 import org.scalatest.{FlatSpec, Matchers}
-import model.State
 
 /**
   * Created by henrik on 2017-08-16.

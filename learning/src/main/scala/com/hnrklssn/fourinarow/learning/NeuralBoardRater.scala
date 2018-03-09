@@ -9,6 +9,7 @@ import neuroflow.nets.DenseNetwork._
 import neuroflow.common.{Logs, ~>}
 import shapeless._
 import com.hnrklssn.fourinarow.core.model.{Board, Player, Player1Marker, Player2Marker, BoardStateRater}
+import com.hnrklssn.fourinarow.core.util
 import breeze.linalg.{DenseMatrix, DenseVector}
 import scala.collection.parallel.ParSeq
 import scala.io.{BufferedSource, Source}

@@ -1,5 +1,4 @@
-import logic.BoardStateRater
-import model._
+import com.hnrklssn.fourinarow.core.model._
 import org.scalatest.{FlatSpec, Matchers}
 
 /**
