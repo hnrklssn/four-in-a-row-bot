@@ -134,7 +134,7 @@ class HumanPlayer(name: String) extends PlayMaker {
     println(Board.prettyPrint(board))
     println("Make a move (0-6)")
     val choice = scala.io.StdIn.readInt()
-    if(board.col(choice).size == 6) {
+    if(board.col(choice).lengthCompare(6) == 0) {
       println("Column full, try again")
       pickMove(board, player)
     } else if(choice < 0 || choice > 6) {
@@ -144,4 +144,6 @@ class HumanPlayer(name: String) extends PlayMaker {
       choice
     }
   }
+
+  override def toString: String = name
 }

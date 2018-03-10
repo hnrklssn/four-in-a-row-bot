@@ -17,13 +17,9 @@ class Tournament(persistence: Persistence, playMakers: PlayMaker*) {
 
   private def makeTurns(currentPlayer: (PlayMaker, Player), otherPlayer: (PlayMaker, Player), board: Board): Option[Player] = {
     val (rater, marker) = currentPlayer
-    val nextBoard = board.placeMarker(board.bestMove(rater, marker), marker)
+    val nextBoard = board.placeMarker(rater.pickMove(board, marker), marker)
     if(nextBoard.ended()) {
-      if(nextBoard.isVictorious(marker)) {
-        Some(marker)
-      } else {
-        None
-      }
+      Option(marker).filter(nextBoard.isVictorious)
     } else {
       val result = makeTurns(otherPlayer, currentPlayer, nextBoard)
       persistence.recordBoardStateResult(nextBoard, result)
