@@ -89,6 +89,8 @@ class NeuralBoardRater(private val net: FeedForwardNetwork, val id: Int, val ver
   override def toString: String = s"bot$id-$version"
 
   override val random: Boolean = explore
+
+  def touch(): Unit = net(DenseVector.zeros(42))
 }
 
 object NeuralBoardRater {

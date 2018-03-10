@@ -94,8 +94,11 @@ object Learn extends App {
     loadNets(input)
   }
 
+  initialNets.head.touch() //load netlib before blocking
+
   H2Persistence.initialize()
-  val path = System.getProperty("user.home") + File.separator + "bots" + File.separator + ISODateTimeFormat.dateHourMinute.print(DateTime.now())
+  val dateTimeString = ISODateTimeFormat.dateHourMinute.print(DateTime.now()).replace(":", ".")
+  val path = System.getProperty("user.home") + File.separator + "bots" + File.separator + dateTimeString
   val customDir = new File(path)
   if (customDir.exists() || customDir.mkdirs()) {
     implicit val system: ActorSystem = ActorSystem("system")
