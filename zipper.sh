@@ -34,7 +34,6 @@ done
 
 acc="$acc $skeleton2"
 
-mkdir -p package/util
 echo "$acc" > package/com/hnrklssn/fourinarow/riddles/WeightsConfigContainer.scala
 
 #curr=`pwd`
@@ -56,5 +55,7 @@ echo "$acc" > package/com/hnrklssn/fourinarow/riddles/WeightsConfigContainer.sca
 #cd package
 
 #cp -r ./include-libs/* ./package/
+rm ~/testbot.zip
 
-zip -r ~/testbot.zip ./package/
+cd package/com/hnrklssn
+zip -r ~/testbot.zip ./fourinarow
