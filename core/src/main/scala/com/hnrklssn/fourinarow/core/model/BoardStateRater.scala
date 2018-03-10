@@ -57,11 +57,11 @@ trait BoardStateRater extends PlayMaker {
 
   protected def emptySpaces(board: Board) = 42 - (0 to 6).map(board.col(_).size).sum
   protected def levelLimit(numberOfEmptySpaces: Int): Int = if(numberOfEmptySpaces > 32) {
-    0
+    1
   } else if (numberOfEmptySpaces > 19) {
     1
   } else if (numberOfEmptySpaces > 14) {
-    2
+    3
   } else if (numberOfEmptySpaces > 10) {
     3
   } else {

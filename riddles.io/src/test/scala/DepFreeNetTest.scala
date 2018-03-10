@@ -33,7 +33,7 @@ class DepFreeNetTest  extends FlatSpec with Matchers {
     compare(input3)
     compare(input4)
     def compare(in: Seq[Double]) = {
-0      val res1 = neuroflowNet(DenseVector(in.toArray))(0)
+      val res1 = neuroflowNet(DenseVector(in.toArray))(0)
       val res2 = depFreeNet(in.toVector)(0)
       println(s"res1: $res1 - res2: $res2")
       res1 should equal(res2)
