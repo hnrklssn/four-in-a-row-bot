@@ -90,6 +90,8 @@ class NeuralBoardRater(private val net: FeedForwardNetwork, val id: Int, val ver
 
   override val random: Boolean = explore
 
+  override def levelLimit(numberOfEmptySpaces: Int): Int = 1 + super.levelLimit(numberOfEmptySpaces)
+
   def touch(): Unit = net(DenseVector.zeros(42))
 }
 

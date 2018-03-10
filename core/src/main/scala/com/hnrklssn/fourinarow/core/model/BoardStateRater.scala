@@ -18,9 +18,9 @@ trait BoardStateRater extends PlayMaker {
   def version: Int
   val random: Boolean
 
-  override def pickMove(board: Board, player: Player): Int = recurseBestMove(board,player, 0)._1
+  override def pickMove(board: Board, player: Player): Int = recurseBestMove(board,player, 0, levelLimit(emptySpaces(board)))._1
 
-  private def recurseBestMove(board: Board, player: Player, level: Int): (Int, Double) = {
+  private def recurseBestMove(board: Board, player: Player, level: Int, maxLevel: Int): (Int, Double) = {
     //System.err.println(s"recursing - level: $level")
     val ratings = (0 -> 0.0) +: //default if filter clears everything
       (0 to 6).map(x => x -> board.col(x))
@@ -29,8 +29,8 @@ trait BoardStateRater extends PlayMaker {
         val nextBoard = board.placeMarker(x, player)
         val ratingOption = this.rate(nextBoard, player)
         val rating = ratingOption match {
-          case Some(r) => if(level < 3 && !nextBoard.ended()) {
-            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1)
+          case Some(r) => if(level < maxLevel && !nextBoard.ended()) {
+            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1, maxLevel)
             if(worstCaseRating < 0 || r < 0) {
               throw new IllegalArgumentException
             }
@@ -39,7 +39,7 @@ trait BoardStateRater extends PlayMaker {
             r
           }
           case None =>
-            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1)
+            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1, maxLevel)
             flipRating(worstCaseRating)
         }
         x -> rating
@@ -49,6 +49,19 @@ trait BoardStateRater extends PlayMaker {
     } else {
       ratings.maxBy(_._2)
     }
+  }
+
+  protected def emptySpaces(board: Board) = 42 - (0 to 6).map(board.col(_).size).sum
+  protected def levelLimit(numberOfEmptySpaces: Int): Int = if(numberOfEmptySpaces > 32) {
+    0
+  } else if (numberOfEmptySpaces > 19) {
+    1
+  } else if (numberOfEmptySpaces > 14) {
+    2
+  } else if (numberOfEmptySpaces > 10) {
+    3
+  } else {
+    4
   }
 }
 
