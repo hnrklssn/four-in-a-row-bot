@@ -23,7 +23,7 @@ trait BoardStateRater extends PlayMaker {
   private def recurseBestMove(board: Board, player: Player, level: Int): (Int, Double) = {
     //System.err.println(s"recursing - level: $level")
     val ratings = (0 -> 0.0) +: //default if filter clears everything
-      (0 to 6).map(x => x -> board.col(x)).par
+      (0 to 6).map(x => x -> board.col(x))
       .filter(_._2.lengthCompare(6) < 0)
       .map { case (x, _) =>
         val nextBoard = board.placeMarker(x, player)
@@ -45,7 +45,7 @@ trait BoardStateRater extends PlayMaker {
         x -> rating
       }
     if(this.random) {
-      Math.weightedRandomPick(ratings.seq)
+      Math.weightedRandomPick(ratings)
     } else {
       ratings.maxBy(_._2)
     }

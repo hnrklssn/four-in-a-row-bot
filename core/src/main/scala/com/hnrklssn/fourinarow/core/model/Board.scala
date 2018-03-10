@@ -3,6 +3,8 @@ package com.hnrklssn.fourinarow.core.model
 import BoardStateRater._
 import com.hnrklssn.fourinarow.core.util.Math
 
+import scala.annotation.tailrec
+
 /**
   * Created by henrik on 2017-08-15.
   */
@@ -26,20 +28,18 @@ trait Board {
 
 }
 
-class BoardImpl(input: Seq[List[Marker]]) extends Board {
+class BoardImpl(input: Seq[List[Marker]], lastPlacedOption: Option[Int] = None) extends Board {
 
   def placeMarker(x: Int, marker: Marker): Board = {
     val newArray = input.zipWithIndex
-      .map{ t =>
-        val xs = t._1
-        val i = t._2
+      .map{ case(xs, i) =>
         if(i == x) {
           marker :: xs
         }  else {
           xs
         }
       }
-    new BoardImpl(newArray)
+    new BoardImpl(newArray, Some(x))
   }
 
   def apply(x: Int)(y: Int): Marker = {
@@ -56,6 +56,13 @@ class BoardImpl(input: Seq[List[Marker]]) extends Board {
   override def row(r: Int): Seq[Marker] = (0 to 6).map{c => apply(c)(r)}
 
   override def isVictorious(player: Player): Boolean = {
+    lastPlacedOption.fold(blindVictoryCheck(player)) { lastPlacedCol =>
+      col(lastPlacedCol).head == player && smartVictoryCheck(player, lastPlacedCol)
+    }
+
+  }
+
+  private def blindVictoryCheck(player: Player): Boolean = {
     {
       val colStreaks = (0 to 6).map{x => Board.longestStreak(col(x), player)}
       colStreaks.max >= 4
@@ -95,6 +102,42 @@ class BoardImpl(input: Seq[List[Marker]]) extends Board {
     }
   }
 
+  private def smartVictoryCheck(player: Player, lastPlacedCol: Int): Boolean = {
+    val lastPlacedRow = col(lastPlacedCol).size - 1
+
+    {
+      val colStreak = Board.longestStreak(col(lastPlacedCol), player)
+      colStreak >= 4
+    } || {
+      val rowStreak = Board.longestStreak(row(lastPlacedRow), player)
+      rowStreak >= 4
+    } || {
+      val leftDiagonal =
+        (for{
+          i <- 0 to 6
+          j = lastPlacedRow + (lastPlacedCol - i)
+        } yield if(j < 6 && j >= 0) {
+          Some(i -> j)
+        } else {
+          None
+        }).collect{ case Some((i, j)) => apply(i)(j)}
+      val leftDiagonalStreak = Board.longestStreak(leftDiagonal, player)
+      leftDiagonalStreak >= 4
+    } || {
+      val rightDiagonal =
+        (for{
+          i <- 0 to 6
+          j = lastPlacedRow - (lastPlacedCol - i)
+        } yield if(j < 6 && j >= 0) {
+          Some(i -> j)
+        } else {
+          None
+        }).collect{case Some((i, j)) => apply(i)(j)}
+      val rightDiagonalStreak = Board.longestStreak(rightDiagonal, player)
+      rightDiagonalStreak >= 4
+    }
+  }
+
   override def isDraw(): Boolean = input.forall(_.lengthCompare(6) == 0) && !(isVictorious(Player1Marker) || isVictorious(Player2Marker))
 
   override def ended(): Boolean = input.forall(_.lengthCompare(6) == 0) || isVictorious(Player1Marker) || isVictorious(Player2Marker)
@@ -111,17 +154,26 @@ object Board {
       .map(_.filterNot(_ == EmptySpace))
       .map(_.toList)
       .toSeq
-    new BoardImpl(array)
+    new BoardImpl(array, None)
   }
 
-  def longestStreak(seq: Seq[Marker], player: Player): Int = seq.foldLeft(0 -> 0){ case ((max, cur), marker) =>
-    val next = if(marker == player) {
-      cur + 1
+  @tailrec
+  def longestStreak(seq: Seq[Marker], player: Player, max: Int = 0, curr: Int = 0): Int = {
+    if(seq.isEmpty || seq.lengthCompare(4 - curr) < 0) {
+      max
     } else {
-      0
+      val next = if(seq.head == player) {
+        curr + 1
+      } else {
+        0
+      }
+      if(next >= 4) {
+        next
+      } else {
+        longestStreak(seq.tail, player, java.lang.Math.max(max, next), next)
+      }
     }
-    (java.lang.Math.max(max, next), next)
-  }._1
+  }
 
   def prettyPrint(board: Board): String = {
     "0|1|2|3|4|5|6\n" +
@@ -136,7 +188,7 @@ object EmptyBoard extends Board {
   override def placeMarker(x: Int, marker: Marker): Board = {
     val array: Array[List[Marker]] = Array.fill(7)(Nil)
     array(x) = List(marker)
-    new BoardImpl(array)
+    new BoardImpl(array, Some(x))
   }
 
   override def apply(x: Int)(y: Int): Marker = EmptySpace
