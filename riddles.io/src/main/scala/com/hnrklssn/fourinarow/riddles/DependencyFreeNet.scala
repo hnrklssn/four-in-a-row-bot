@@ -1,5 +1,7 @@
 package com.hnrklssn.fourinarow.riddles
 
+import java.lang.Math.exp
+
 import scala.collection.mutable
 
 /**
@@ -55,5 +57,7 @@ object DependencyFreeNet {
       .toVector
   }
 
-  def apply(weights: String, activationFunction: Double => Double): DependencyFreeNet = new DependencyFreeNet(parseWeights(weights), activationFunction)
+  def sigmoid(x: Double): Double = 1 / (1 + exp(-x))
+
+  def apply(weights: String, activationFunction: Double => Double = sigmoid): DependencyFreeNet = new DependencyFreeNet(parseWeights(weights), activationFunction)
 }

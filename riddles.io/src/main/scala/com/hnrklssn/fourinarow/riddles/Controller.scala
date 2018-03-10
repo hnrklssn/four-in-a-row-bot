@@ -16,7 +16,7 @@ class Controller {
     WeightsConfigContainer.weights(index)
   }
 
-  private val boardStateRater: BoardStateRater = ??? //NeuralBoardRater.fromString(weightString, explore = false)
+  private val boardStateRater: BoardStateRater = new DependencyFreeBoardRater(DependencyFreeNet(weightString))
 
   @tailrec
   final def run(state: State, inputStream: Stream[String]): Unit = {
