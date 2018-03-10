@@ -18,7 +18,11 @@ trait BoardStateRater extends PlayMaker {
   def version: Int
   val random: Boolean
 
-  override def pickMove(board: Board, player: Player): Int = recurseBestMove(board,player, 0, levelLimit(emptySpaces(board)))._1
+  override def pickMove(board: Board, player: Player): Int = {
+    val res = recurseBestMove(board,player, 0, levelLimit(emptySpaces(board)))
+    System.err.println(s"move ${res._1} with score ${res._2}")
+    res._1
+  }
 
   private def recurseBestMove(board: Board, player: Player, level: Int, maxLevel: Int): (Int, Double) = {
     //System.err.println(s"recursing - level: $level")
