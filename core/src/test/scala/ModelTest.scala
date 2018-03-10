@@ -170,7 +170,7 @@ class ModelTest extends FlatSpec with Matchers {
     }
   }
 
-  "Any board" should "make a move according to board state rating" in {
+  "Any board state rater" should "make a move according to board state rating" in {
     val board =  EmptyBoard
     val middleRater = new BoardStateRater {
       override def rate(board: Board, player: Player): Option[Double] = Some(board.col(3).count(_ == player))
@@ -181,7 +181,7 @@ class ModelTest extends FlatSpec with Matchers {
 
       override val random: Boolean = false
     }
-    val move = board.bestMove(middleRater, Player1Marker)
+    val move = middleRater.pickMove(board, Player1Marker)
     assert(move == 3)
   }
 }

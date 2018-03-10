@@ -1,8 +1,13 @@
 package com.hnrklssn.fourinarow.core.model
 
+import com.hnrklssn.fourinarow.core.model.BoardStateRater.flipRating
+import com.hnrklssn.fourinarow.core.util.Math
+
 import scala.util.Random
 
-sealed trait PlayMaker
+sealed trait PlayMaker {
+  def pickMove(board: Board, player: Player): Int
+}
 
 /**
   * Created by henrik on 2017-08-16.
@@ -12,6 +17,39 @@ trait BoardStateRater extends PlayMaker {
   def id: Int
   def version: Int
   val random: Boolean
+
+  override def pickMove(board: Board, player: Player): Int = recurseBestMove(board,player, 0)._1
+
+  private def recurseBestMove(board: Board, player: Player, level: Int): (Int, Double) = {
+    //System.err.println(s"recursing - level: $level")
+    val ratings = (0 -> 0.0) +: //default if filter clears everything
+      (0 to 6).map(x => x -> board.col(x)).par
+      .filter(_._2.lengthCompare(6) < 0)
+      .map { case (x, _) =>
+        val nextBoard = board.placeMarker(x, player)
+        val ratingOption = this.rate(nextBoard, player)
+        val rating = ratingOption match {
+          case Some(r) => if(level < 3 && !nextBoard.ended()) {
+            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1)
+            if(worstCaseRating < 0 || r < 0) {
+              throw new IllegalArgumentException
+            }
+            0.85 * r + 0.15 * flipRating(worstCaseRating)
+          } else {
+            r
+          }
+          case None =>
+            val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1)
+            flipRating(worstCaseRating)
+        }
+        x -> rating
+      }
+    if(this.random) {
+      Math.weightedRandomPick(ratings.seq)
+    } else {
+      ratings.maxBy(_._2)
+    }
+  }
 }
 
 object LongestStreakRater extends BoardStateRater {
@@ -58,7 +96,7 @@ object LongestStreakRater extends BoardStateRater {
       } else {
         0
       }
-      (Math.max(max, next), next)
+      java.lang.Math.max(max, next) -> next
     }._1
 
   override def id: Int = -1
@@ -91,17 +129,17 @@ object BoardStateRater {
 }
 
 class HumanPlayer(name: String) extends PlayMaker {
-  def pickMove(board: Board): Int = {
+  override def pickMove(board: Board, player: Player): Int = {
     println(s"$name's turn")
     println(Board.prettyPrint(board))
     println("Make a move (0-6)")
     val choice = scala.io.StdIn.readInt()
     if(board.col(choice).size == 6) {
       println("Column full, try again")
-      pickMove(board)
+      pickMove(board, player)
     } else if(choice < 0 || choice > 6) {
       println(s"Your pick - $choice - is not in the interval 0-6, try again")
-      pickMove(board)
+      pickMove(board, player)
     } else {
       choice
     }

@@ -15,43 +15,6 @@ trait Board {
   def isVictorious(player: Player): Boolean
   def isDraw(): Boolean
   def ended(): Boolean
-  def bestMove(playMaker: PlayMaker, player: Player): Int = {
-    playMaker match {
-      case h: HumanPlayer => h.pickMove(this)
-      case b: BoardStateRater => recurseBestMove(b, player, 0)._1
-    }
-  }
-
-  private def recurseBestMove(boardStateRater: BoardStateRater, player: Player, level: Int): (Int, Double) = {
-    //System.err.println(s"recursing - level: $level")
-    val ratings = (0 -> 0.0) +: (0 to 6).map(x => x -> col(x)).par
-      .filter(_._2.size < 6)
-      .map { t =>
-        val x = t._1
-        val nextBoard = placeMarker(x, player)
-        val ratingOption = boardStateRater.rate(nextBoard, player)
-        val rating = ratingOption match {
-          case Some(r) => if(level < 3 && !nextBoard.ended()) {
-            val (worstCaseMove, worstCaseRating) = nextBoard.recurseBestMove(boardStateRater, player.otherPlayer, level + 1)
-            if(worstCaseRating < 0 || r < 0) {
-              throw new IllegalArgumentException
-            }
-            0.85 * r + 0.15 * flipRating(worstCaseRating)
-          } else {
-            r
-          }
-          case None =>
-            val (worstCaseMove, worstCaseRating) = nextBoard.recurseBestMove(boardStateRater, player.otherPlayer, level + 1)
-            flipRating(worstCaseRating)
-        }
-        x -> rating
-      }
-    if(boardStateRater.random) {
-      Math.weightedRandomPick(ratings.seq)
-    } else {
-      ratings.maxBy(_._2)
-    }
-  }
 
   override def toString: String = {
     val colStrings = (0 to 6).map{x =>
@@ -132,9 +95,9 @@ class BoardImpl(input: Seq[List[Marker]]) extends Board {
     }
   }
 
-  override def isDraw(): Boolean = input.forall(_.size == 6) && !(isVictorious(Player1Marker) || isVictorious(Player2Marker))
+  override def isDraw(): Boolean = input.forall(_.lengthCompare(6) == 0) && !(isVictorious(Player1Marker) || isVictorious(Player2Marker))
 
-  override def ended(): Boolean = input.forall(_.size == 6) || isVictorious(Player1Marker) || isVictorious(Player2Marker)
+  override def ended(): Boolean = input.forall(_.lengthCompare(6) == 0) || isVictorious(Player1Marker) || isVictorious(Player2Marker)
 }
 
 object Board {
