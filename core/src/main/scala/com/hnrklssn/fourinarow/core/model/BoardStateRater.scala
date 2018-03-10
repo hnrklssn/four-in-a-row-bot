@@ -43,6 +43,7 @@ trait BoardStateRater extends PlayMaker {
             r
           }
           case None =>
+            System.err.println("None output (this shouldn't happen)")
             val (worstCaseMove, worstCaseRating) = this.recurseBestMove(nextBoard, player.otherPlayer, level + 1, maxLevel)
             flipRating(worstCaseRating)
         }
