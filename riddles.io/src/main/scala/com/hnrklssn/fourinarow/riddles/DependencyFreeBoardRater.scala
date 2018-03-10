@@ -2,6 +2,8 @@ package com.hnrklssn.fourinarow.riddles
 
 import com.hnrklssn.fourinarow.core.model._
 
+import scala.io.Source
+
 class DependencyFreeBoardRater(net: DependencyFreeNet) extends BoardStateRater {
   override def rate(board: Board, player: Player): Option[Double] = if(board.ended()){
     Some(if(board.isVictorious(player)) {
@@ -40,4 +42,11 @@ class DependencyFreeBoardRater(net: DependencyFreeNet) extends BoardStateRater {
   override def version: Int = 1
 
   override val random: Boolean = false
+}
+
+object DependencyFreeBoardRater {
+  def fromFile(file: String): DependencyFreeBoardRater = {
+    val content = Source.fromFile(file).mkString
+    new DependencyFreeBoardRater(DependencyFreeNet(content))
+  }
 }

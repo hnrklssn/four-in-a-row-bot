@@ -37,7 +37,7 @@ lazy val learning = (project in file("learning"))
       //"org.scalanlp" %% "breeze-natives" % "0.13.2" classifier "sources",
       "com.github.fommil.netlib" % "all" % "1.1.2" pomOnly(),
       "com.typesafe.akka" %% "akka-actor" % "2.5.4")
-  ).dependsOn(core)
+  ).dependsOn(core, riddles)
 lazy val riddles = (project in file("riddles.io"))
   .settings(commonSettings,
     libraryDependencies ++= Seq(
