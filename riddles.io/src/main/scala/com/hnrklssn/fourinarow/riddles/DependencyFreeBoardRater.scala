@@ -5,8 +5,10 @@ import com.hnrklssn.fourinarow.core.model._
 class DependencyFreeBoardRater(net: DependencyFreeNet) extends BoardStateRater {
   override def rate(board: Board, player: Player): Option[Double] = if(board.ended()){
     Some(if(board.isVictorious(player)) {
+      System.err.println(s"victorious! $player")
       1.0
     } else if(board.isVictorious(player.otherPlayer)) {
+      System.err.println(s"loser: $player")
       0.0
     } else {
       0.5
