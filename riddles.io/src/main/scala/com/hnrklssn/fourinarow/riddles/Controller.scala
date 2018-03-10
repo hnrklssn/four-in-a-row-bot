@@ -13,6 +13,7 @@ class Controller {
   private lazy val weightString: String = {
     val size = WeightsConfigContainer.weights.length
     val index = Random.nextInt(size)
+    System.err.println("Using weightString " + index)
     WeightsConfigContainer.weights(index)
   }
 

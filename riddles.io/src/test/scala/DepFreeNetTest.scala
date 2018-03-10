@@ -23,9 +23,21 @@ class DepFreeNetTest  extends FlatSpec with Matchers {
     implicit val weights  = IO.Json.read(json)
     val neuroflowNet = Network(layers)
     val depFreeNet = DependencyFreeNet(json)
-    val input = 0.0 until 42.0 by 1.0
     implicit val doubleEquality = TolerantNumerics.tolerantDoubleEquality(0.0001)
-    neuroflowNet(DenseVector(input.toArray))(0) should equal(depFreeNet(input.toVector)(0))
+    val input1 = 0.0 until 42.0 by 1.0
+    val input2 = 0.0 until 1.0 by 1.0 / 42.0
+    val input3 = 0.0 until 0.01 by 0.01 / 42.0
+    val input4 = Seq.fill(42)(java.lang.Math.random())
+    compare(input1)
+    compare(input2)
+    compare(input3)
+    compare(input4)
+    def compare(in: Seq[Double]) = {
+0      val res1 = neuroflowNet(DenseVector(in.toArray))(0)
+      val res2 = depFreeNet(in.toVector)(0)
+      println(s"res1: $res1 - res2: $res2")
+      res1 should equal(res2)
+    }
   }
 
   it should "parse a layer of weights" in {
