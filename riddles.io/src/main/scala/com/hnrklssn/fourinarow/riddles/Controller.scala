@@ -31,7 +31,7 @@ class Controller {
         parts(0) match {
           case "update" =>
             if(parts(2) == "field") {
-              run(state.updateBoard(Board(parts(3))), inputStream.tail)
+              run(state.updateBoard(Board.fromRiddles(parts(3))), inputStream.tail)
             } else {
               run(state, inputStream.tail)
             }
