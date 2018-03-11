@@ -158,6 +158,18 @@ object Board {
     new BoardImpl(array, None)
   }
 
+  def fromRiddles(input: String): BoardImpl = {
+    val array = input.split(',')
+      .map{
+        case "0" => Player1Marker
+        case "1" => Player2Marker
+        case _ => EmptySpace
+      }.grouped(7).toSeq.transpose
+      .map(_.filterNot(_ == EmptySpace))
+      .map(_.toList)
+    new BoardImpl(array, None)
+  }
+
   @tailrec
   def longestStreak(seq: Seq[Marker], player: Player, max: Int = 0, curr: Int = 0): Int = {
     if(seq.isEmpty || seq.lengthCompare(4 - curr) < 0) {

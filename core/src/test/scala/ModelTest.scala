@@ -184,4 +184,11 @@ class ModelTest extends FlatSpec with Matchers {
     val move = middleRater.pickMove(board, Player1Marker)
     assert(move == 3)
   }
+
+  """.,.,.,0,.,.,.,
+    |.,.,.,1,.,.,.,
+    |.,.,.,1,0,.,.,
+    |.,.,.,0,1,.,.,
+    |.,.,1,0,1,0,.,
+    |.,1,1,0,0,0,1""".stripMargin
 }
