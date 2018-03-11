@@ -49,6 +49,7 @@ trait BoardStateRater extends PlayMaker {
         }
         x -> rating
       }
+    System.err.println(s"level: $level | $ratings")
     if(this.random) {
       Math.weightedRandomPick(ratings)
     } else {
