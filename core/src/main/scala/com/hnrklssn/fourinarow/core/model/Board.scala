@@ -103,7 +103,7 @@ class BoardImpl(input: Seq[List[Marker]], lastPlacedOption: Option[Int] = None) 
   }
 
   private def smartVictoryCheck(player: Player, lastPlacedCol: Int): Boolean = {
-    System.err.println("smartVicotryCheck " + player:)
+    System.err.println("smartVictoryCheck " + player)
     val lastPlacedRow = col(lastPlacedCol).size - 1
 
     {

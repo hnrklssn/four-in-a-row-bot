@@ -37,6 +37,7 @@ class Controller {
             }
           case "action" =>
             val playerMarker = Player(state.yourBotId)
+            System.err.println(Board.prettyPrint(state.board))
             val move = boardStateRater.pickMove(state.board, playerMarker)
             System.out.println(s"place_disc $move")
             System.out.flush()
